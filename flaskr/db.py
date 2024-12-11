@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Connection
 from datetime import datetime
 import click
-from flask import current_app, g
+from flask import current_app, Flask
 
 
 
@@ -43,3 +43,11 @@ def init_db_command():
 sqlite3.register_converter(
     'timestamp', lambda v: datetime.fromisoformat(v.decode())
 )
+
+def init_app(app: Flask):
+
+    # O flask chama a função quando depois de retornar o response
+    app.teardown_appcontext(close_db)
+
+    # Adiciona um novo comando que pode ser chamado com o comando 'flask'
+    app.cli.add_command(init_db_command)
