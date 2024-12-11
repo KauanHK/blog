@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Connection
 from datetime import datetime
 import click
-from flask import current_app, Flask
+from flask import current_app, g, Flask
 
 
 
@@ -19,7 +19,7 @@ def get_db() -> Connection:
 
     return g.db
 
-def close_db() -> None:
+def close_db(e = None) -> None:
     '''Termina a conexão com o banco de dados caso esteja conectado.'''
 
     db = g.pop('db', None)
