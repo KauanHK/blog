@@ -3,7 +3,7 @@ from flask import Flask
 
 
 
-def criar_app(test_config = None):
+def create_app(test_config = None):
 
     app = Flask(__name__, instance_relative_config = True)
     app.config.from_mapping(
@@ -25,6 +25,7 @@ def criar_app(test_config = None):
     def index():
         return 'Página inicial'
     
+    from . import db
+    db.init_app(app)
+    
     return app
-
-app = criar_app()
