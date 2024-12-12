@@ -1,0 +1,15 @@
+<nav>
+    
+    <div class="logo">
+        <a href="{{ url_for('index') }}">Meu Blog</a>
+    </div>
+    
+    <ul>
+        {% if user %}
+        <li><a href="/">Hello, {{ user }}</a></li>
+        {% else %}
+        <li><a href="{{ url_for('login_page') }}">Login</a></li>
+        {% endif %}
+    </ul>
+
+</nav>

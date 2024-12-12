@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog{% endblock %}
+
+{% block extra_static %}
+<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="posts">
+
+    <a href="{{ url_for('post_page') }}">Post</a>
+
+    {% for user in users %}
+        <article>
+            <a class="username">@{{ user.username }}</a>
+            <p>Este é o post do {{ user.username }}</p>
+            <p>A senha dele é {{ user.password }}</p>
+            <button>Like</button>
+        </article>
+    {% endfor %}
+
+</section>
+
+{% endblock %}
