@@ -1,0 +1,36 @@
+/* Postagens */
+.posts {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.posts article {
+    width: 50%;
+    /* display: flex;
+    flex-direction: column;
+    align-items: center; */
+    background: #fff;
+    padding: 1rem;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.posts article p {
+    margin-bottom: 1rem;
+    color: #666;
+}
+
+.posts article .username {
+    display: inline-block;
+    text-align: left;
+    color: #007BFF;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.posts article a:hover {
+    text-decoration: underline;
+}
