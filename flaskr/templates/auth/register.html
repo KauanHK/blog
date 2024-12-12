@@ -3,7 +3,7 @@
 {% block title %}Registro{% endblock %}
 
 {% block extra_static %}
-<link rel="stylesheet" href="{{ url_for('static', filename='auth_pages.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -17,11 +17,6 @@
         <div class="form-group">
             <label for="username">Usuário</label>
             <input type="text" id="username" name="username" placeholder="Escolha um nome de usuário" required>
-        </div>
-
-        <div class="form-group">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
         </div>
 
         <div class="form-group">
