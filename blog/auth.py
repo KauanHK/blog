@@ -55,7 +55,7 @@ def login():
         ).fetchone()
 
         if user is None:
-            error = 'Nome de usuário não registrado.'
+            error = 'Username incorreto.'
         elif not check_password_hash(user['password'], password):
             error = 'Senha incorreta.'
 
