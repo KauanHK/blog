@@ -29,5 +29,9 @@ def create_app(test_config = None) -> Flask:
     # Inicialização do app
     from . import db
     db.init_app(app)
+
+    # Registro do blueprint de autenticação
+    from .auth import bp
+    app.register_blueprint(bp)
     
     return app
