@@ -9,7 +9,7 @@
             <li>Hello, {{ g.user['username'] }}</li>
             <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
         {% else %}
-            <li><a href="{{ url_for('auth.register') }}">Login</a></li>
+            <li><a href="{{ url_for('auth.register') }}">Registrar-se</a></li>
             <li><a href="{{ url_for('auth.login') }}">Login</a></li>
         {% endif %}
     </ul>
