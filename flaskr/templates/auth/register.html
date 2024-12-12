@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro{% endblock %}
+
+{% block extra_static %}
+<link rel="stylesheet" href="{{ url_for('static', filename='auth_pages.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>Registro</h1>
+
+    <form action="{{ url_for('auth.register') }}" method="POST">
+    
+        <div class="form-group">
+            <label for="username">Usuário</label>
+            <input type="text" id="username" name="username" placeholder="Escolha um nome de usuário" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" placeholder="Escolha uma senha" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="confirm_password">Confirme a Senha</label>
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirme sua senha" required>
+        </div>
+        
+        <button type="submit">Registrar</button>
+        <div class="extras">
+            <a href="{{ url_for('auth.login') }}">Já tem uma conta? Faça login</a>
+        </div>
+        
+    </form>
+
+</div>
+{% endblock %}
