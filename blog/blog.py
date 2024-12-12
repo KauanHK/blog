@@ -9,6 +9,23 @@ from .db import get_db
 bp = Blueprint('blog', __name__)
 
 
+def get_post(id: int, check_author: bool = True):
+
+    post = get_db().execute(
+        'SELECT p.id, title, body, created, author_id, username '
+        'FROM post p JOIN user u ON p.author_id = u.id '
+        'WHERE p.id = ?',
+        (id,)
+    ).fetchone()
+
+    if post is None:
+        abort(404, f"Post com o id {id} não existe.")
+
+    if check_author and post['author_id'] != g.user['id']:
+        abort(403)
+
+    return post
+
 @bp.route('/')
 def index():
 
