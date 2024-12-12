@@ -109,3 +109,14 @@ def test_create_update_validate(client, auth, path):
     # Adicionar verificação para o body
     assert 'A postagem deve ter um título.' in response.data
 
+
+def test_delete(client, auth, app):
+
+    auth.login()
+    response = client.post('/1/delete')
+    assert response.headers['Location'] == '/'
+
+    with app.app_context():
+        db = get_db()
+        post = db.execute('SELECT * FROM post WHERE id = 1').fetchone()
+        assert post is None
