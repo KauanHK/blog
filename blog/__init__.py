@@ -22,6 +22,10 @@ def create_app(test_config = None) -> Flask:
     except OSError:
         pass
 
+    @app.route('/hello')
+    def hello():
+        return 'Hello, world!'
+
     # Inicialização do app
     from . import db
     db.init_app(app)
