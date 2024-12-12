@@ -17,13 +17,13 @@
     {% for post in posts %}
         <article>
             
+            <p>@{{ post['username'] }} | {{ post['created'].strftime('%d-%m-%Y') }}</p>
             <h1>{{ post['title'] }}</h1>
-            <a class="username">@{{ post['username'] }} | {{ post['created'].strftime('%d-%m-%Y') }}</a>
+            <p class="body">{{ post['body'] }}</p>
 
-            if {% g.user['id'] == post['author_id'] %}
+            {% if g.user['id'] == post['author_id'] %}
                 <a href="{{ url_for('blog.update', id=post['id']) }}">Editar</a>
             {% endif %}
-            <p class="body">{{ post['body'] }}</p>
 
         </article>
     
