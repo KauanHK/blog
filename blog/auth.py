@@ -18,9 +18,9 @@ def register():
         error = None
 
         if not username:
-            error = 'Nome de usuário obrigatório.'
+            error = 'Defina um username.'
         elif not password:
-            error = 'Crie uma senha.'
+            error = 'Defina uma senha.'
 
         if error is None:
             try:
