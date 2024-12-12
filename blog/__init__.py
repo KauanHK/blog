@@ -22,10 +22,6 @@ def create_app(test_config = None) -> Flask:
     except OSError:
         pass
 
-    @app.route('/')
-    def index():
-        return 'Página inicial'
-    
     # Inicialização do app
     from . import db
     db.init_app(app)
