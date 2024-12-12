@@ -90,11 +90,11 @@ def logout():
 
 
 
-from functools import wraps
+import functools
 from typing import Callable
 
 def login_required(view: Callable):
-    @wraps
+    @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for('auth.login'))
