@@ -46,7 +46,7 @@ sqlite3.register_converter(
 
 def init_app(app: Flask):
 
-    # O flask chama a função quando depois de retornar o response
+    # O flask chama a função depois de retornar o response
     app.teardown_appcontext(close_db)
 
     # Adiciona um novo comando que pode ser chamado com o comando 'flask'

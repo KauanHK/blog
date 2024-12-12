@@ -3,7 +3,8 @@ from flask import Flask
 
 
 
-def create_app(test_config = None):
+def create_app(test_config = None) -> Flask:
+    """Cria o app Flask com as configurações fornecidas por 'test_config'."""
 
     app = Flask(__name__, instance_relative_config = True)
     app.config.from_mapping(
@@ -25,6 +26,7 @@ def create_app(test_config = None):
     def index():
         return 'Página inicial'
     
+    # Inicialização do app
     from . import db
     db.init_app(app)
     
