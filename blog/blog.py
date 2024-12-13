@@ -15,7 +15,7 @@ bp = Blueprint('blog', __name__)
 def get_post(id: int, check_author: bool = True) -> dict[str, Any]:
 
     post = get_db().execute(
-        'SELECT p.id, title, body, created, author_id, username '
+        'SELECT p.id, title, body, created, author_id, username, like_count '
         'FROM post p JOIN user u ON p.author_id = u.id '
         'WHERE p.id = ?',
         (id,)
@@ -45,7 +45,7 @@ def index():
 
     db = get_db()
     posts = db.execute(
-        'SELECT p.id, title, body, created, author_id, username '
+        'SELECT p.id, title, body, created, author_id, username, like_count '
         'FROM post p JOIN user u ON p.author_id = u.id '
         'ORDER BY created DESC'
     ).fetchall()
