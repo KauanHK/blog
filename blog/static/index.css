@@ -9,9 +9,6 @@
 
 .posts article {
     width: 50%;
-    /* display: flex;
-    flex-direction: column;
-    align-items: center; */
     background: #fff;
     padding: 1rem;
     border-radius: 5px;
@@ -23,6 +20,11 @@
     color: #666;
 }
 
+.posts article h1 {
+    font-size: 1.5rem;
+    color: #333;
+}
+
 .posts article .username {
     display: inline-block;
     text-align: left;
@@ -31,6 +33,51 @@
     font-weight: bold;
 }
 
-.posts article a:hover {
-    text-decoration: underline;
+.posts article .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.posts article .actions a {
+    text-decoration: none;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Botão de editar */
+.posts article .edit-button {
+    font-size: 12px;
+}
+
+.posts article .edit-button:hover {
+    background: white;
+    color: #007BFF;
+}
+
+
+.like-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.like-button {
+    color: black;
+    border: none;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.1s, color 0.1s;
+}
+
+.like-button.curtido {
+    color: rgb(0,220,220);
+}
+
+.like-button:hover {
+    color: rgb(0,200,200);
 }
