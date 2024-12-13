@@ -4,6 +4,7 @@
 
 {% block extra_static %}
 <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+<script src="{{ url_for('static', filename = 'like.js') }}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -15,16 +16,28 @@
 <section class="posts">
 
     {% for post in posts %}
+    
         <article>
-            
             <p>@{{ post['username'] }} | {{ post['created'].strftime('%d-%m-%Y') }}</p>
             <h1>{{ post['title'] }}</h1>
             <p class="body">{{ post['body'] }}</p>
+        
+            <div class="actions">
 
-            {% if g.user['id'] == post['author_id'] %}
-                <a href="{{ url_for('blog.update', id=post['id']) }}">Editar</a>
-            {% endif %}
-
+                <div class="like-container">
+                    <span 
+                        class="like-button {% if g.user and deu_like(post['id'], g.user['id']) %}curtido{% endif %}" 
+                        data-post-id="{{ post['id'] }}"
+                        aria-label="Curtir">
+                        <span id="like-count-{{ post['id'] }}">{{ post['like_count'] }}</span>
+                        Curtir
+                    </span>
+                </div>
+                
+                {% if g.user['id'] == post['author_id'] %}
+                    <a href="{{ url_for('blog.update', id=post['id']) }}" class="edit-button">Editar</a>
+                {% endif %}
+            </div>
         </article>
     
         {% if not loop.last %}
