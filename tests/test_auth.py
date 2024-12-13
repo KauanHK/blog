@@ -5,6 +5,9 @@ from blog.db import get_db
 from flask import Flask
 from flask.testing import FlaskClient
 from conftest import AuthActions
+from blog.messages import (
+    USERNAME_INVALIDO, SENHA_INVALIDA, USERNAME_JA_REGISTRADO, USERNAME_INCORRETO, SENHA_INCORRETA
+)
 
 
 def test_register(client: FlaskClient, app: Flask) -> None:
@@ -33,9 +36,9 @@ def test_register(client: FlaskClient, app: Flask) -> None:
 @pytest.mark.parametrize(
     ('username', 'password', 'message'),
     (
-        ('', '', b'Defina um username.'),
-        ('test', '', b'Defina uma senha.'),
-        ('test', '123', 'Username já registrado.'.encode())
+        ('', '', USERNAME_INVALIDO.encode()),
+        ('test', '', SENHA_INVALIDA.encode()),
+        ('test', '123', USERNAME_JA_REGISTRADO.encode())
     )
 )
 def test_register_validate_input(client: FlaskClient, username: str, password: str, message: bytes) -> None:
@@ -77,8 +80,8 @@ def test_login(client: FlaskClient, auth: AuthActions) -> None:
 @pytest.mark.parametrize(
     ('username', 'password', 'message'),
     (
-        ('a', 'test', b'Username incorreto.'),
-        ('test', 'a', b'Senha incorreta.')
+        ('a', 'test', USERNAME_INCORRETO.encode()),
+        ('test', 'a', SENHA_INCORRETA.encode())
     )
 )
 def test_login_validate_input(auth: AuthActions, username: str, password: str, message: str) -> None:

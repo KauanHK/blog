@@ -28,7 +28,7 @@ def test_index(client: FlaskClient, auth: AuthActions):
     assert b'Log Out' in response.data
     assert b'test title' in response.data
     assert b'test | ' in response.data
-    # assert b'test\nbody' is response.data
+    assert b'test\nbody' in response.data
     assert b'href="/1/update"' in response.data
 
 
