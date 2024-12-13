@@ -18,17 +18,16 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 def register():
 
     if request.method == 'POST':
+
         username = request.form['username']
         password = request.form['password']
         db = get_db()
-        error = None
 
         if not username:
-            error = USERNAME_INVALIDO
+            flash(USERNAME_INVALIDO)
         elif not password:
-            error = SENHA_INVALIDA
-
-        if error is None:
+            flash(SENHA_INVALIDA)
+        else:
             try:
                 db.execute(
                     'INSERT INTO user (username, password) VALUES (?,?)',
@@ -36,11 +35,11 @@ def register():
                 )
                 db.commit()
             except db.IntegrityError:
-                error = USERNAME_JA_REGISTRADO
+                flash(USERNAME_JA_REGISTRADO)
             else:
+                flash(None)
                 return redirect(url_for('auth.login'))
     
-        flash(error)
     
     return render_template('auth/register.html')
 
@@ -53,7 +52,6 @@ def login():
         username = request.form['username']
         password = request.form['password']
         db = get_db()
-        error = None
         
         user = db.execute(
             'SELECT * FROM user WHERE username = ?',
@@ -61,16 +59,15 @@ def login():
         ).fetchone()
 
         if user is None:
-            error = USERNAME_INCORRETO
+            flash(USERNAME_INCORRETO)
         elif not check_password_hash(user['password'], password):
-            error = SENHA_INCORRETA
-
-        if error is None:
+            flash(SENHA_INCORRETA)
+        else:
+            flash(None)
             session.clear()
             session['user_id'] = user['id']
             return redirect(url_for('index'))
         
-        flash(error)
 
     return render_template('auth/login.html')
 
