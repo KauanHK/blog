@@ -2,6 +2,7 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
+from typing import Any
 from .auth import login_required
 from .db import get_db
 
@@ -11,7 +12,7 @@ from .messages import POST_NAO_EXISTE, SEM_TITULO, SEM_BODY
 bp = Blueprint('blog', __name__)
 
 
-def get_post(id: int, check_author: bool = True):
+def get_post(id: int, check_author: bool = True) -> dict[str, Any]:
 
     post = get_db().execute(
         'SELECT p.id, title, body, created, author_id, username '
@@ -28,6 +29,17 @@ def get_post(id: int, check_author: bool = True):
 
     return post
 
+def deu_like(post_id: int, user_id: int) -> bool:
+
+    db = get_db()
+    like = db.execute(
+        'SELECT * FROM like WHERE post_id = ? AND user_id = ?',
+        (post_id, user_id)
+    ).fetchone()
+
+    return like is not None
+        
+
 @bp.route('/')
 def index():
 
@@ -37,7 +49,7 @@ def index():
         'FROM post p JOIN user u ON p.author_id = u.id '
         'ORDER BY created DESC'
     ).fetchall()
-    return render_template('blog/index.html', posts=posts)
+    return render_template('blog/index.html', posts=posts, deu_like=deu_like)
 
 
 @bp.route('/create', methods=('GET','POST'))
