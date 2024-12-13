@@ -4,6 +4,7 @@ from datetime import datetime
 import click
 from flask import current_app, g, Flask
 
+from .messages import INIT_DB_MESSAGE
 
 
 def get_db() -> Connection:
@@ -37,7 +38,7 @@ def init_db():
 @click.command('init-db')
 def init_db_command():
     init_db()
-    click.echo('Banco de dados inicializado.')
+    click.echo(INIT_DB_MESSAGE)
 
 
 sqlite3.register_converter(

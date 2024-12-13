@@ -5,6 +5,8 @@ from werkzeug.exceptions import abort
 from .auth import login_required
 from .db import get_db
 
+from .messages import POST_NAO_EXISTE, SEM_TITULO, SEM_BODY
+
 
 bp = Blueprint('blog', __name__)
 
@@ -19,7 +21,7 @@ def get_post(id: int, check_author: bool = True):
     ).fetchone()
 
     if post is None:
-        abort(404, f"Post com o id {id} não existe.")
+        abort(404, POST_NAO_EXISTE)
 
     if check_author and post['author_id'] != g.user['id']:
         abort(403)
@@ -48,10 +50,10 @@ def create():
         error = None
 
         if not title:
-            error = 'A postagem deve ter um título.'
+            error = SEM_TITULO
         
         elif not body:
-            error = 'A postagem deve ter conteúdo.'
+            error = SEM_BODY
         
         if error is not None:
             flash(error)
@@ -78,15 +80,9 @@ def update(id: int):
 
         title = request.form['title']
         body = request.form['body']
-        error = None
 
         if not title:
-            error = 'A postagem deve ter um título'
-        elif not body:
-            error = 'A postagem deve ter conteúdo'
-        
-        if error is not None:
-            flash(error)
+            flash(SEM_TITULO)
         else:
             db = get_db()
             db.execute(

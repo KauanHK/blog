@@ -2,7 +2,13 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
 from werkzeug.security import check_password_hash, generate_password_hash
+import functools
+from typing import Callable
 from .db import get_db
+
+from .messages import (
+    USERNAME_INVALIDO, SENHA_INVALIDA, USERNAME_JA_REGISTRADO, USERNAME_INCORRETO, SENHA_INCORRETA
+)
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -18,9 +24,9 @@ def register():
         error = None
 
         if not username:
-            error = 'Defina um username.'
+            error = USERNAME_INVALIDO
         elif not password:
-            error = 'Defina uma senha.'
+            error = SENHA_INVALIDA
 
         if error is None:
             try:
@@ -30,7 +36,7 @@ def register():
                 )
                 db.commit()
             except db.IntegrityError:
-                error = 'Username já usado.'
+                error = USERNAME_JA_REGISTRADO
             else:
                 return redirect(url_for('auth.login'))
     
@@ -55,9 +61,9 @@ def login():
         ).fetchone()
 
         if user is None:
-            error = 'Username incorreto.'
+            error = USERNAME_INCORRETO
         elif not check_password_hash(user['password'], password):
-            error = 'Senha incorreta.'
+            error = SENHA_INCORRETA
 
         if error is None:
             session.clear()
@@ -88,10 +94,6 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
-
-
-import functools
-from typing import Callable
 
 def login_required(view: Callable):
     @functools.wraps(view)
