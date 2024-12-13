@@ -1,5 +1,5 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, g, redirect, render_template, request, url_for, jsonify
 )
 from werkzeug.exceptions import abort
 from typing import Any
@@ -123,3 +123,46 @@ def delete(id: int):
     )
     db.commit()
     return redirect(url_for('blog.index'))
+
+
+@bp.route('/like/<int:post_id>', methods=('GET',))
+@login_required
+def like(post_id: int):
+
+    # Se o post não existir, será lançada uma exceção
+    get_post(post_id, check_author=False)
+
+    db = get_db()
+    if deu_like(post_id, g.user['id']):
+        db.execute(
+            'DELETE FROM like WHERE post_id = ? AND user_id = ?',
+            (post_id, g.user['id'])
+        )
+        db.execute(
+            'UPDATE post SET like_count = like_count - 1 WHERE id = ?',
+            (post_id,)
+        )
+        liked = False
+    else:
+        db.execute(
+            'INSERT INTO like (post_id, user_id) VALUES (?,?)',
+            (post_id, g.user['id'])
+        )
+        db.execute(
+            'UPDATE post SET like_count = like_count + 1 WHERE id = ?',
+            (post_id,)
+        )
+        liked = True
+
+    db.commit()
+
+    like_count = db.execute(
+        'SELECT like_count FROM post WHERE id = ?',
+        (post_id,)
+    ).fetchone()[0]
+
+    return jsonify({
+        'liked': liked,
+        'like_count': like_count
+    })
+
