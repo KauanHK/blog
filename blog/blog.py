@@ -82,7 +82,7 @@ def create():
     return render_template('blog/create.html')
 
 
-@bp.route('/<int:id>/update', methods=('GET', 'POST'))
+@bp.route('/update/<int:id>', methods=('GET', 'POST'))
 @login_required
 def update(id: int):
 
@@ -108,7 +108,7 @@ def update(id: int):
     return render_template('blog/update.html', post=post)
 
 
-@bp.route('/<int:id>/delete', methods=('POST',))
+@bp.route('/delete/<int:id>', methods=('POST',))
 @login_required
 def delete(id: int):
 
