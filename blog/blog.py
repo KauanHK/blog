@@ -12,7 +12,7 @@ from .messages import POST_NAO_EXISTE, SEM_TITULO, SEM_BODY
 bp = Blueprint('blog', __name__)
 
 
-def get_post(id: int, check_author: bool = True) -> dict[str, Any]:
+def get_post(id: int, check_author: bool = True):
 
     post = get_db().execute(
         'SELECT p.id, title, body, created, author_id, username, like_count '
@@ -28,6 +28,15 @@ def get_post(id: int, check_author: bool = True) -> dict[str, Any]:
         abort(403)
 
     return post
+
+def get_replies(post_id: int):
+
+    db = get_db()
+    return db.execute(
+        'SELECT * FROM replies WHERE post_id = ?',
+        (post_id,)
+    ).fetchall()
+
 
 def deu_like(post_id: int, user_id: int) -> bool:
 
