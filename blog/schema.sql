@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS like;
+DROP TABLE IF EXISTS reply;
 
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,3 +29,14 @@ CREATE TABLE like (
     UNIQUE (post_id, user_id)
 );
 CREATE INDEX idx_like_post_id ON like (post_id);
+
+CREATE TABLE reply (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES post (id),
+    FOREIGN KEY (user_id) REFERENCES user (id)
+);
+
