@@ -177,3 +177,24 @@ def test_delete(client: FlaskClient, auth: AuthActions, app: Flask):
         db = get_db()
         post = db.execute('SELECT * FROM post WHERE id = 1').fetchone()
         assert post is None
+
+
+def test_reply(app: Flask, client: FlaskClient, auth: AuthActions):
+
+    auth.login()
+
+    response = client.post(
+        '/reply/1',
+        data = {
+            'body': 'Body teste ...'
+        }
+    )
+    assert response.headers['Location'] == '/'
+
+    with app.app_context():
+        db = get_db()
+        reply = db.execute(
+            'SELECT body FROM reply WHERE id = ?',
+            (1,)
+        ).fetchone()
+        assert reply['body'] == 'Body teste ...'

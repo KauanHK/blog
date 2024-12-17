@@ -21,6 +21,14 @@ def get_post(id: int, check_author: bool = True) -> Post:
         abort(403)
     return post
 
+def get_replies(post_id: int):
+
+    db = get_db()
+    return db.execute(
+        'SELECT * FROM replies WHERE post_id = ?',
+        (post_id,)
+    ).fetchall()
+
 
 def deu_like(post_id: int, author_id: int) -> bool:
     like = Like.get(post_id = post_id, author_id = author_id)
@@ -145,3 +153,28 @@ def like(post_id: int):
         'like_count': like_count
     })
 
+
+
+@bp.route('/reply/<int:post_id>', methods=('GET', 'POST'))
+@login_required
+def reply(post_id: int = None):
+
+    get_post(post_id, check_author=False)
+    if request.method == 'GET':
+        return render_template('blog/reply.html')
+
+    db = get_db()
+    body = request.form['body']
+
+    if not body:
+        flash(SEM_BODY)
+
+    else:
+
+        db.execute(
+            'INSERT INTO reply (post_id, user_id, body) VALUES (?,?,?)',
+            (post_id, g.user['id'], body)
+        )
+        db.commit()
+
+    return redirect(url_for('blog.index'))
