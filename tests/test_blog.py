@@ -29,15 +29,15 @@ def test_index(client: FlaskClient, auth: AuthActions):
     assert b'test title' in response.data
     assert b'test | ' in response.data
     assert b'test\nbody' in response.data
-    assert b'href="/1/update"' in response.data
+    assert b'href="/update/1"' in response.data
 
 
 @pytest.mark.parametrize(
     'path',
     (
         '/create',
-        '/1/update',
-        '/1/delete'
+        '/update/1',
+        '/delete/1'
     )
 )
 def test_login_required(client: FlaskClient, path: str) -> None:
@@ -65,16 +65,16 @@ def test_author_required(app: Flask, client: FlaskClient, auth: AuthActions) -> 
         db.commit()
 
     auth.login()
-    assert client.post('/1/update').status_code == 403
-    assert client.post('/1/delete').status_code == 403
-    assert b'href="/1/update"' not in client.get('/').data
+    assert client.post('/update/1').status_code == 403
+    assert client.post('/delete/1').status_code == 403
+    assert b'href="/update/1"' not in client.get('/').data
 
 
 @pytest.mark.parametrize(
     'path',
     (
-        '/2/update',
-        '/2/delete'
+        '/update/2',
+        '/delete/2'
     )
 )
 def test_exists_required(client: FlaskClient, auth: AuthActions, path: str) -> None:
@@ -114,15 +114,15 @@ def test_create(client: FlaskClient, auth: AuthActions, app: Flask) -> None:
 def test_update(client: FlaskClient, auth: AuthActions, app: Flask):
     """
     1. 'auth' faz login
-    2. Verifica se o status da requisição GET para '/1/update' é igual a 200
-    3. POST para '/1/update'
+    2. Verifica se o status da requisição GET para '/update/1' é igual a 200
+    3. POST para '/update/1'
     4. Verifica se o post foi atualizado
     """
 
     auth.login()
-    assert client.get('/1/update').status_code == 200
+    assert client.get('/update/1').status_code == 200
     client.post(
-        '/1/update',
+        '/update/1',
         data = {
             'title': 'updated',
             'body': 'body atualizado!'
@@ -139,7 +139,7 @@ def test_update(client: FlaskClient, auth: AuthActions, app: Flask):
     'path',
     (
         '/create',
-        '/1/update'
+        '/update/1'
     )
 )
 def test_create_update_validate(client: FlaskClient, auth: AuthActions, path: str):
@@ -170,7 +170,7 @@ def test_delete(client: FlaskClient, auth: AuthActions, app: Flask):
     """
 
     auth.login()
-    response = client.post('/1/delete')
+    response = client.post('/delete/1')
     assert response.headers['Location'] == '/'
 
     with app.app_context():
