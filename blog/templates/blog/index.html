@@ -18,24 +18,25 @@
     {% for post in posts %}
     
         <article>
-            <p>@{{ post['username'] }} | {{ post['created'].strftime('%d-%m-%Y') }}</p>
-            <h1>{{ post['title'] }}</h1>
-            <p class="body">{{ post['body'] }}</p>
+            <p>@{{ post.author.username }} | {{ post.created.strftime('%d/%m/%Y') }}</p>
+            <h1>{{ post.title }}</h1>
+            <p class="body">{{ post.body }}</p>
         
             <div class="actions">
 
                 <div class="like-container">
-                    <span 
-                        class="like-button {% if g.user and deu_like(post['id'], g.user['id']) %}curtido{% endif %}" 
-                        data-post-id="{{ post['id'] }}"
-                        aria-label="Curtir">
-                        <span id="like-count-{{ post['id'] }}">{{ post['like_count'] }}</span>
-                        Curtir
-                    </span>
+                    <a class="like-button {% if g.user and deu_like(post.id, g.user.id) %}curtido{% endif %}" 
+                    {% if not g.user %}
+                        href="{{ url_for('auth.login') }}"
+                    {% else %}
+                        data-post-id="{{ post.id }}"
+                    {% endif %}>
+                        {{ post.like_count }} Curtir
+                    </a>
                 </div>
                 
-                {% if g.user['id'] == post['author_id'] %}
-                    <a href="{{ url_for('blog.update', id=post['id']) }}" class="edit-button">Editar</a>
+                {% if g.user.id == post.author.id %}
+                    <a href="{{ url_for('blog.update', id=post.id) }}" class="edit-button">Editar</a>
                 {% endif %}
             </div>
         </article>

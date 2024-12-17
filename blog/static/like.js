@@ -8,6 +8,7 @@ likeButtons.forEach(button => {
         event.preventDefault(); // Evita comportamento padrão, se houver
 
         const postId = button.getAttribute('data-post-id');
+        if (postId == null) return;
 
         // URL para fazer a requisição para dar like
         const url = `/like/${postId}`;
@@ -20,8 +21,7 @@ likeButtons.forEach(button => {
 
                 // Retorna um json
                 const data = await response.json();
-                const likeCount = document.getElementById(`like-count-${postId}`);
-                likeCount.innerText = data.like_count;
+                button.innerText = data.like_count + ' Curtir';
 
                 // Atualizar o estado do botão
                 if (data.liked)
