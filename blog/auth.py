@@ -9,6 +9,7 @@ from .db import get_db
 from .messages import (
     USERNAME_INVALIDO, SENHA_INVALIDA, USERNAME_JA_REGISTRADO, USERNAME_INCORRETO, SENHA_INCORRETA
 )
+from .models import User
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -51,21 +52,16 @@ def login():
 
         username = request.form['username']
         password = request.form['password']
-        db = get_db()
-        
-        user = db.execute(
-            'SELECT * FROM user WHERE username = ?',
-            (username,)
-        ).fetchone()
+        user = User.get(username = username)
 
         if user is None:
             flash(USERNAME_INCORRETO)
-        elif not check_password_hash(user['password'], password):
+        elif not check_password_hash(user.password_hash, password):
             flash(SENHA_INCORRETA)
         else:
             flash(None)
             session.clear()
-            session['user_id'] = user['id']
+            session['user_id'] = user.id
             return redirect(url_for('index'))
         
 
@@ -80,10 +76,11 @@ def load_logged_in_user():
         g.user = None
         return
     
-    g.user = get_db().execute(
-        'SELECT * FROM user WHERE id = ?',
-        (user_id,)
-    ).fetchone()
+    g.user = User.get(id = user_id)
+    # g.user = get_db().execute(
+    #     'SELECT * FROM user WHERE id = ?',
+    #     (user_id,)
+    # ).fetchone()
 
 
 @bp.route('/logout')
