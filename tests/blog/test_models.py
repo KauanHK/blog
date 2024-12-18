@@ -64,9 +64,10 @@ def test_user_create_and_save(app: Flask):
 @pytest.mark.parametrize(
     ('username', 'password'),
     (
-        ('bob', '123'),
         ('a', 'a'),
-        ('z', 'z')
+        ('b', 'b'),
+        ('c', 'c'),
+        ('d', 'd'),
     )
 )
 def test_user_get(app: Flask, username: str, password: str):
