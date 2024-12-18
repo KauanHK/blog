@@ -71,7 +71,21 @@ class Model(ABC):
 
     @classmethod
     def create_and_save(cls, **kwargs) -> Self:
-        return cls._create_and_save(kwargs)
+        return cls._create_and_save(**kwargs)
+    
+    def is_saved(self) -> bool:
+        
+        if self.id is None:
+            return False
+        
+        db = get_db()
+        line = db.execute(
+            f'SELECT * FROM {self.table} WHERE id = ?',
+            (self.id,)
+        ).fetchone()
+        
+        return line is not None
+
 
     @abstractmethod
     def save(self) -> None: ...
