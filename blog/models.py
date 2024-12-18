@@ -203,6 +203,8 @@ class Post(Model):
 
         if not isinstance(self._author, User):
             self._author = User.get(id = self._author)
+            if self._author is None:
+                raise ValueError('Autor do post não está registrado.')
         return self._author
     
     @property
@@ -212,10 +214,10 @@ class Post(Model):
     @classmethod
     def get(cls, check_author: bool = True, **kwargs) -> Self | None:
 
-        post = cls._get(kwargs)
+        post = cls._get(**kwargs)
         if post is None:
             abort(404, POST_NAO_EXISTE)
-        if check_author and post.id != g.user.id:
+        if check_author and post.author.id != g.user.id:
             abort(403, FORBIDDEN)
         return post
         
