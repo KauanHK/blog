@@ -94,9 +94,9 @@ class Model(ABC):
 class User(Model):
 
     @overload
-    def __init__(self, id: int, username: str, password_hash: str) -> None: ...
-    @overload
     def __init__(self, username: str, password: str) -> None: ...
+    @overload
+    def __init__(self, id: int, username: str, password_hash: str) -> None: ...
 
     def __init__(self, *args, **kwargs) -> None:
 
@@ -123,7 +123,7 @@ class User(Model):
         else:
             raise ValueError(f'init de User espera dois ou três argumentos, mas recebeu {len(args)}\nargs')
         
-    def save(self) -> None:
+    def save(self) -> Self:
         
         db = get_db()
         db.execute(
@@ -131,6 +131,7 @@ class User(Model):
             (self.username, self.password_hash)
         )
         db.commit()
+        return self.get(username = self.username)
 
     @classmethod
     def create_and_save(cls, username: str, password: str, raise_integrity: bool = True) -> Self:
@@ -143,10 +144,6 @@ class User(Model):
             if raise_integrity:
                 raise
 
-
-    def is_registered(self) -> None:
-        return self.id is None
-        
 
 class Post(Model):
 
