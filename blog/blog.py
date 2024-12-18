@@ -17,6 +17,7 @@ def get_post(id: int, check_author: bool = True) -> Post:
     post = Post.get(id = id)
     if post is None:
         abort(404, POST_NAO_EXISTE)
+
     if check_author and post.author.id != g.user.id:
         abort(403)
     return post
@@ -40,18 +41,15 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
-        error = None
 
         if not title:
-            error = SEM_TITULO
-        
+            flash(SEM_TITULO)        
         elif not body:
-            error = SEM_BODY
-        
-        if error is not None:
-            flash(error)
+            flash(SEM_BODY)
         else:
-            Post.save(
+            flash(None)
+
+            Post.create_and_save(
                 author_id = g.user.id,
                 title = title,
                 body = body
@@ -169,11 +167,4 @@ def reply(post_id: int = None):
         )
         db.commit()
 
-    return redirect(url_for('blog.index'))
-
-
-@bp.route('/post/save')
-def save_post():
-
-    Post(g.user, 'Teste', 'Teste de salvamento de post').save()
     return redirect(url_for('blog.index'))
