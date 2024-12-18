@@ -54,6 +54,11 @@ class Model(ABC):
     @classmethod
     def _create_and_save(cls, **kwargs) -> Self:
 
+        for k,v in kwargs.items():
+            if isinstance(v, ModelType):
+                kwargs.pop(k)
+                kwargs[f'{k}_id'] = v.id
+
         keys = ','.join(kwargs.keys())
         values = tuple(kwargs.values())
 
