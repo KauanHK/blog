@@ -1,14 +1,9 @@
 import pytest
 from flask import Flask
-from flask.testing import FlaskClient
-import sqlite3
 
-from conftest import AuthActions
 from blog.db import get_db
-from blog.models import User, Post, ModelType
-from typing import Any
-from collections.abc import Callable
-
+from blog.models import User, ModelType
+from werkzeug.security import check_password_hash
 
 
 def get_user(username: str):
@@ -63,6 +58,7 @@ def test_user_create_and_save(app: Flask):
         ).fetchone()
 
         assert user['username'] == username
+        assert check_password_hash(user['password'], '123')
 
 
 @pytest.mark.parametrize(
