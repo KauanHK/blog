@@ -21,14 +21,6 @@ def get_post(id: int, check_author: bool = True) -> Post:
         abort(403)
     return post
 
-def get_replies(post_id: int):
-
-    db = get_db()
-    return db.execute(
-        'SELECT * FROM replies WHERE post_id = ?',
-        (post_id,)
-    ).fetchall()
-
 
 def deu_like(post_id: int, author_id: int) -> bool:
     like = Like.get(post_id = post_id, author_id = author_id)
@@ -173,8 +165,15 @@ def reply(post_id: int = None):
 
         db.execute(
             'INSERT INTO reply (post_id, user_id, body) VALUES (?,?,?)',
-            (post_id, g.user['id'], body)
+            (post_id, g.user.id, body)
         )
         db.commit()
 
+    return redirect(url_for('blog.index'))
+
+
+@bp.route('/post/save')
+def save_post():
+
+    Post(g.user, 'Teste', 'Teste de salvamento de post').save()
     return redirect(url_for('blog.index'))

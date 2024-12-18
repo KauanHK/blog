@@ -1,27 +1,45 @@
+from flask import g, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from .db import get_db
-from typing import Self, Union, overload
+from abc import ABC, abstractmethod
+from typing import Self, Union, overload, Any
+from .messages import FORBIDDEN, POST_NAO_EXISTE
 
 
 
+def _get_conditions_sql(kwargs: dict):
+    values = []
+    for k in kwargs:
+        values.append(f'{k} = ?')
+    return ' AND '.join(values)
 
-class Model:
+class Model(ABC):
+
+    def __init_subclass__(cls):
+        cls.table = cls.__name__.lower()
 
     @classmethod
-    def get(cls, **kwargs) -> Self | None:
-
-        values = []
-        for k in kwargs:
-            values.append(f'{k} = ?')
-
-        command = f'SELECT * FROM {cls.__name__.lower()} WHERE ' + ' AND '.join(values)
+    def _get(cls, kwargs: dict[str, Any]) -> Self | None:
 
         db = get_db()
+        command = f'SELECT * FROM {cls.table} WHERE ' + _get_conditions_sql(kwargs)
         obj = db.execute(
             command, tuple(kwargs.values())
         ).fetchone()
 
         return cls(*obj) if obj else None
+    
+    @classmethod
+    def get(cls, **kwargs) -> Self | None:
+        return cls._get(kwargs)
+    
+    @classmethod
+    def filter(cls, **kwargs) -> list[Self]:
+
+        return get_db().execute(
+            f'SELECT * FROM {cls.table} WHERE ' + _get_conditions_sql(kwargs),
+            tuple(kwargs.values())
+        ).fetchall()
     
     @classmethod
     def get_all(cls) -> list[Self]:
@@ -33,7 +51,7 @@ class Model:
 
     
     @classmethod
-    def save(cls, **kwargs) -> None:
+    def create_and_save(cls, **kwargs) -> None:
 
         keys = ','.join(kwargs.keys())
         values = tuple(kwargs.values())
@@ -44,6 +62,9 @@ class Model:
             values
         )
         db.commit()
+
+    @abstractmethod
+    def save(self) -> None: ...
     
 
 class User(Model):
@@ -56,6 +77,7 @@ class User(Model):
     def __init__(self, *args, **kwargs) -> None:
 
         if len(args) == 2:
+            self.id = None
             self.username = args[0]
             self.password_hash = generate_password_hash(args[1])
 
@@ -65,6 +87,7 @@ class User(Model):
             self.password_hash = args[2]
 
         elif len(kwargs) == 2:
+            self.id = None
             self.username = kwargs['username']
             self.password_hash = kwargs['password']
 
@@ -76,8 +99,19 @@ class User(Model):
         else:
             raise ValueError(f'init de User espera dois ou três argumentos, mas recebeu {len(args)}\nargs')
         
+    def save(self) -> None:
+        
+        db = get_db()
+        db.execute(
+            'INSERT INTO user (username, password) VALUES (?,?)',
+            (self.username, self.password_hash)
+        )
+        db.commit()
 
-    
+
+    def is_registered(self) -> None:
+        return self.id is None
+        
 
 class Post(Model):
 
@@ -139,15 +173,74 @@ class Post(Model):
             self._author = User.get(id = self._author)
         return self._author
     
+    @property
+    def likes(self) -> list["Like"]:
+        return Like.filter(post_id = self.id)
+    
+    @classmethod
+    def get(cls, check_author: bool = True, **kwargs) -> Self | None:
+
+        post = cls._get(kwargs)
+        if post is None:
+            abort(404, POST_NAO_EXISTE)
+        if check_author and post.id != g.user.id:
+            abort(403, FORBIDDEN)
+        return post
+        
+    
+    def save(self) -> None:
+
+        db = get_db()
+        db.execute(
+            'INSERT INTO post (author_id, title, body) VALUES (?,?,?)',
+            (self.author.id, self.title, self.body)
+        )
+        db.commit()
 
 
 class Like(Model):
 
-    def __init__(self, id: int | None, post: Post | int, author: User | int, created: str | None) -> None:
-        self.id = id
-        self._post = post
-        self._author = author
-        self.created = created
+    @overload
+    def __init__(
+        self,
+        post: Post,
+        author: User,
+    ) -> None: ...
+        
+    @overload
+    def __init__(
+        self,
+        id: int,
+        post_id: int,
+        author_id: int,
+        created: str
+    ) -> None: ...
+
+    def __init__(self, *args, **kwargs) -> None:
+
+        if len(args) == 2:
+            self._post = args[0]
+            self._author = args[1]
+        
+        elif len(args) == 4:
+            self.id = args[0]
+            self._post = args[1]
+            self._author = args[2]
+            self.created = args[3]
+
+        elif len(kwargs) == 2:
+            self._post = kwargs['post']
+            self._author = kwargs['author']
+        
+        elif len(kwargs) == 3:
+            self.id = kwargs['id']
+            self._post = kwargs['post']
+            self._author = kwargs['author']
+            self.created = kwargs['created']
+
+        else:
+            raise ValueError(f'Esperava 5 ou 3 argumentos *args ou **kwargs')
+
 
     @property
     def post(self) -> Post:
@@ -160,7 +253,74 @@ class Like(Model):
         if not isinstance(self._author, User):
             self._author = User.get(id = self._author)
         return self._author
+
+    def save(self) -> None:
+
+        db = get_db()
+        db.execute(
+            'INSERT INTO like (post_id, author_id) VALUES (?,?)',
+            (self.post.id, self.author.id)
+        )
+        db.commit()
     
 
+class Reply:
 
-ModelType = Union[User, Post, Like]
+    @overload
+    def __init__(
+        self,
+        post: Post,
+        user: User,
+        body: str,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self,
+        id: int,
+        post_id: int,
+        user_id: int,
+        body: str,
+        created: str
+    ) -> None: ...
+        
+    def __init__(self, *args, **kwargs) -> None:
+
+        if len(args) == 5:
+            self.id = args[0]
+            self.post = args[1]
+            self.user = args[2]
+            self.body = args[3]
+            self.created = args[4]
+        
+        elif len(args) == 3:
+            self.post = args[0]
+            self.user = args[1]
+            self.body = args[2]
+
+        elif len(kwargs) == 5:
+            self.id = kwargs['id']
+            self.post = kwargs['post']
+            self.user = kwargs['user']
+            self.body = kwargs['body']
+            self.created = kwargs['created']
+        
+        elif len(kwargs) == 3:
+            self.post = kwargs['post']
+            self.user = kwargs['user']
+            self.body = kwargs['body']
+
+        else:
+            raise ValueError(f'Esperava 5 ou 3 argumentos *args ou **kwargs')
+        
+    def save(self) -> None:
+
+        db = get_db()
+        db.execute(
+            'INSERT INTO reply (post_id, user_id, body) values (?,?,?)',
+            (self.post.id, self.user.id, self.body)
+        )
+        db.commit()
+
+
+ModelType = Union[User, Post, Like, Reply]
