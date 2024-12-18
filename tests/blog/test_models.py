@@ -33,6 +33,23 @@ def test_save_user(app: Flask):
         assert bob['username'] == username
 
 
+@pytest.mark.parametrize(
+    'obj',
+    (
+        User('a', '123'),
+        User('b', '123'),
+        User('c', '123')
+    )
+)
+def test_is_saved(app: Flask, obj: ModelType):
+
+    with app.app_context():
+
+        assert not obj.is_saved()
+        obj = obj.save()
+        assert obj.is_saved()
+
+
 def test_user_create_and_save(app: Flask):
 
     username = 'robert'
