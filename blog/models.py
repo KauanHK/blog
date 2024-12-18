@@ -4,6 +4,7 @@ from .db import get_db
 from abc import ABC, abstractmethod
 from typing import Self, Union, overload, Any
 from .messages import FORBIDDEN, POST_NAO_EXISTE
+import sqlite3
 
 
 
@@ -19,7 +20,7 @@ class Model(ABC):
         cls.table = cls.__name__.lower()
 
     @classmethod
-    def _get(cls, kwargs: dict[str, Any]) -> Self | None:
+    def _get(cls, **kwargs) -> Self | None:
 
         db = get_db()
         command = f'SELECT * FROM {cls.table} WHERE ' + _get_conditions_sql(kwargs)
@@ -31,7 +32,7 @@ class Model(ABC):
     
     @classmethod
     def get(cls, **kwargs) -> Self | None:
-        return cls._get(kwargs)
+        return cls._get(**kwargs)
     
     @classmethod
     def filter(cls, **kwargs) -> list[Self]:
@@ -51,7 +52,7 @@ class Model(ABC):
 
     
     @classmethod
-    def create_and_save(cls, **kwargs) -> None:
+    def _create_and_save(cls, **kwargs) -> Self:
 
         keys = ','.join(kwargs.keys())
         values = tuple(kwargs.values())
@@ -62,6 +63,10 @@ class Model(ABC):
             values
         )
         db.commit()
+
+    @classmethod
+    def create_and_save(cls, **kwargs) -> Self:
+        return cls._create_and_save(kwargs)
 
     @abstractmethod
     def save(self) -> None: ...
@@ -107,6 +112,17 @@ class User(Model):
             (self.username, self.password_hash)
         )
         db.commit()
+
+    @classmethod
+    def create_and_save(cls, username: str, password: str, raise_integrity: bool = True) -> Self:
+        try:
+            return cls._create_and_save(
+                username = username,
+                password = generate_password_hash(password)
+            )
+        except sqlite3.IntegrityError:
+            if raise_integrity:
+                raise
 
 
     def is_registered(self) -> None:
