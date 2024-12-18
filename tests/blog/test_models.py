@@ -74,7 +74,7 @@ def test_user_get(app: Flask, username: str, password: str):
 
     with app.app_context():
 
-        User.create_and_save(username, password, raise_integrity = False)
-
         user = User.get(username = username)
         assert user.username == username
+        assert check_password_hash(user.password_hash, password)
+
