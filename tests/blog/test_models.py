@@ -32,9 +32,9 @@ def test_save_user(app: Flask):
 @pytest.mark.parametrize(
     'obj',
     (
-        User('a', '123'),
-        User('b', '123'),
-        User('c', '123')
+        User('x', '123'),
+        User('y', '123'),
+        User('z', '123')
     )
 )
 def test_is_saved(app: Flask, obj: ModelType):
