@@ -73,8 +73,8 @@ def test_author_required(app: Flask, client: FlaskClient, auth: AuthActions) -> 
 @pytest.mark.parametrize(
     'path',
     (
-        '/update/2',
-        '/delete/2'
+        '/update/-1',
+        '/delete/-1'
     )
 )
 def test_exists_required(client: FlaskClient, auth: AuthActions, path: str) -> None:
@@ -95,20 +95,22 @@ def test_create(client: FlaskClient, auth: AuthActions, app: Flask) -> None:
     4. Verifica se o post foi criado
     """
 
+    with app.app_context():
+        count = get_db().execute('SELECT COUNT(id) FROM post').fetchone()[0]
+
     auth.login()
     assert client.get('/create').status_code == 200
     client.post(
         '/create',
         data = {
             'title': 'created',
-            'body': ''
+            'body': 'body do post criado'
         }
     )
 
     with app.app_context():
-        db = get_db()
-        count = db.execute('SELECT COUNT(id) FROM post').fetchone()[0]
-        assert count == 1
+        new_count = get_db().execute('SELECT COUNT(id) FROM post').fetchone()[0]
+        assert new_count == count+1
 
 
 def test_update(client: FlaskClient, auth: AuthActions, app: Flask):
