@@ -215,6 +215,19 @@ class Post(Model):
     def likes(self) -> list["Like"]:
         return Like.filter(post_id = self.id)
     
+    @property
+    def replies(self) -> list["Reply"]:
+
+        db = get_db()
+        data = db.execute(
+            'SELECT * FROM reply WHERE post_id = ?',
+            (self.id,)
+        ).fetchall()
+
+        replies = [Reply(**data_reply) for data_reply in data]
+        return replies
+
+    
     @classmethod
     def get(cls, check_author: bool = True, **kwargs) -> Self | None:
 
@@ -308,7 +321,7 @@ class Like(Model):
         return f'Like(post={self.post}, author={self.author})'
     
 
-class Reply:
+class Reply(Model):
 
     @overload
     def __init__(
