@@ -89,6 +89,7 @@ class Model(ABC):
 
     @abstractmethod
     def save(self) -> None: ...
+
     
 
 class User(Model):
@@ -143,6 +144,9 @@ class User(Model):
         except sqlite3.IntegrityError:
             if raise_integrity:
                 raise
+
+    def __repr__(self) -> str:
+        return f'User(username={self.username})'
 
 
 class Post(Model):
@@ -231,6 +235,9 @@ class Post(Model):
         )
         db.commit()
 
+    def __repr__(self) -> str:
+        return f'Post(title = {self.title[:10]}, body={self.body[:10]}, author={self.author.username})'
+
 
 class Like(Model):
 
@@ -296,6 +303,9 @@ class Like(Model):
             (self.post.id, self.author.id)
         )
         db.commit()
+
+    def __repr__(self) -> str:
+        return f'Like(post={self.post}, author={self.author})'
     
 
 class Reply:
@@ -355,6 +365,9 @@ class Reply:
             (self.post.id, self.user.id, self.body)
         )
         db.commit()
+
+    def __repr__(self) -> str:
+        return f'Reply(post={self.post}, author={self.author}, body={self.body})'
 
 
 ModelType = Union[User, Post, Like, Reply]
