@@ -226,6 +226,14 @@ class Post(Model):
 
         replies = [Reply(**data_reply) for data_reply in data]
         return replies
+    
+    def add_reply(self, body: str) -> "Reply":
+        
+        return Reply.create_and_save(
+            post_id = self.id,
+            user_id = g.user.id,
+            body = body
+        )
 
     
     @classmethod
