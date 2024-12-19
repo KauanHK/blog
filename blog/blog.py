@@ -5,7 +5,7 @@ from werkzeug.exceptions import abort
 
 from .auth import login_required
 from .db import get_db
-from .models import Post, Like
+from .models import Post, Like, Reply
 from .messages import POST_NAO_EXISTE, SEM_TITULO, SEM_BODY
 
 
@@ -153,18 +153,16 @@ def reply(post_id: int = None):
     if request.method == 'GET':
         return render_template('blog/reply.html')
 
-    db = get_db()
     body = request.form['body']
 
     if not body:
         flash(SEM_BODY)
-
-    else:
-
-        db.execute(
-            'INSERT INTO reply (post_id, user_id, body) VALUES (?,?,?)',
-            (post_id, g.user.id, body)
-        )
-        db.commit()
-
+        return redirect(url_for('blog.reply', post_id=post_id))
+        
+    Reply.create_and_save(
+        post_id = post_id,
+        user_id = g.user.id,
+        body = body
+    )
     return redirect(url_for('blog.index'))
+
