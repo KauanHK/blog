@@ -21,15 +21,16 @@ def test_register(client: FlaskClient, app: Flask) -> None:
     assert client.get('/auth/register').status_code == 200
     response = client.post(
         '/auth/register', data = {
-            'username': 'a',
-            'password': 'a'
+            'username': 'w',
+            'password': 'w'
         }
     )
     assert response.headers['Location'] == '/auth/login'
 
     with app.app_context():
         assert get_db().execute(
-            "SELECT * FROM user WHERE username = 'a'"
+            "SELECT * FROM user WHERE username = ?",
+            ('w',)
         ).fetchone() is not None
 
 
@@ -80,8 +81,8 @@ def test_login(client: FlaskClient, auth: AuthActions) -> None:
 @pytest.mark.parametrize(
     ('username', 'password', 'message'),
     (
-        ('a', 'test', USERNAME_INCORRETO.encode()),
-        ('test', 'a', SENHA_INCORRETA.encode())
+        ('h', 'test', USERNAME_INCORRETO.encode()),
+        ('a', 'b', SENHA_INCORRETA.encode())
     )
 )
 def test_login_validate_input(auth: AuthActions, username: str, password: str, message: str) -> None:
