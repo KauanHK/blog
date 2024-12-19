@@ -2,8 +2,9 @@ import pytest
 from flask import Flask
 
 from blog.db import get_db
-from blog.models import User, ModelType
+from blog.models import User, Post, ModelType
 from werkzeug.security import check_password_hash
+from typing import Any
 
 
 def get_user(username: str):
@@ -77,4 +78,18 @@ def test_user_get(app: Flask, username: str, password: str):
         user = User.get(username = username)
         assert user.username == username
         assert check_password_hash(user.password_hash, password)
+
+
+@pytest.mark.parametrize(
+    ('model_type', 'kwargs', 'length'),
+    (
+        (Post, {'title': 'test title'}, 4),
+        (Post, {'body': 'test body'}, 3),
+        (Post, {'title': 'test title', 'body': 'test body'}, 2)
+    )
+)
+def test_filter(app: Flask, model_type: ModelType, kwargs: dict[str, Any], length: int):
+
+    with app.app_context():
+        assert len(model_type.filter(**kwargs)) == length
 
