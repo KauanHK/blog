@@ -54,20 +54,9 @@ class Model(ABC):
     @classmethod
     def _create_and_save(cls, **kwargs) -> Self:
 
-        for k,v in kwargs.items():
-            if isinstance(v, ModelType):
-                kwargs.pop(k)
-                kwargs[f'{k}_id'] = v.id
-
-        keys = ','.join(kwargs.keys())
-        values = tuple(kwargs.values())
-
-        db = get_db()
-        db.execute(
-            f'INSERT INTO {cls.__name__.lower()} ({keys}) VALUES ({','.join('?'*len(kwargs))})',
-            values
-        )
-        db.commit()
+        obj = cls(**kwargs)
+        return obj.save()
+        
 
     @classmethod
     def create_and_save(cls, **kwargs) -> Self:
@@ -88,7 +77,7 @@ class Model(ABC):
 
 
     @abstractmethod
-    def save(self) -> None: ...
+    def save(self) -> Self: ...
 
     
 
@@ -132,18 +121,14 @@ class User(Model):
             (self.username, self.password_hash)
         )
         db.commit()
-        return self.get(username = self.username)
+        return User.get(username = self.username)
 
     @classmethod
-    def create_and_save(cls, username: str, password: str, raise_integrity: bool = True) -> Self:
-        try:
-            return cls._create_and_save(
-                username = username,
-                password = generate_password_hash(password)
-            )
-        except sqlite3.IntegrityError:
-            if raise_integrity:
-                raise
+    def create_and_save(cls, username: str, password: str) -> Self:
+        return cls._create_and_save(
+            username = username,
+            password = generate_password_hash(password)
+        )
 
     def __repr__(self) -> str:
         return f'User(username={self.username})'
@@ -154,7 +139,6 @@ class Post(Model):
     @overload
     def __init__(
         self,
-        author: User,
         title: str,
         body: str,
     ) -> None: ...
@@ -163,7 +147,7 @@ class Post(Model):
     def __init__(
         self,
         id: int,
-        author_id: int,
+        user_id: int,
         title: str,
         body: str,
         like_count: int,
@@ -172,44 +156,48 @@ class Post(Model):
 
     def __init__(self, *args, **kwargs) -> None:
         
-        if len(args) == 3:
-            self._author = args[0]
-            self.title = args[1]
-            self.body = args[2]
+        if len(args) == 2:
+            if g.user is None:
+                raise ValueError('Usuário não logado.')
+            self._user = g.user
+            self.title = args[0]
+            self.body = args[1]
 
         elif len(args) == 6:
             self.id = args[0]
-            self._author = args[1]
+            self._user = args[1]
             self.title = args[2]
             self.body = args[3]
             self.like_count = args[4]
             self.created = args[5]
 
-        elif len(kwargs) == 3:
-            self._author = kwargs['author']
+        elif len(kwargs) == 2:
+            if g.user is None:
+                raise ValueError('Usuário não logado.')
+            self._user = g.user
             self.title = kwargs['title']
             self.body = kwargs['body']
 
         elif len(kwargs) == 6:
             self.id = kwargs['id']
-            self._author = kwargs['author_id']
+            self._user = kwargs['user_id']
             self.title = kwargs['title']
             self.body = kwargs['body']
             self.like_count = kwargs['like_count']
             self.created = kwargs['created']
 
         else:
-            raise ValueError(f'Esperava 3 ou 5 argumentos, recebeu {len(args)}\n{args}')
+            raise ValueError(f'Esperava 2 ou 5 argumentos, recebeu {len(args)}\n{args}')
 
 
     @property
-    def author(self) -> User:
+    def user(self) -> User:
 
-        if not isinstance(self._author, User):
-            self._author = User.get(id = self._author)
-            if self._author is None:
+        if not isinstance(self._user, User):
+            self._user = User.get(id = self._user)
+            if self._user is None:
                 raise ValueError('Autor do post não está registrado.')
-        return self._author
+        return self._user
     
     @property
     def likes(self) -> list["Like"]:
@@ -242,22 +230,23 @@ class Post(Model):
         post = cls._get(**kwargs)
         if post is None:
             abort(404, POST_NAO_EXISTE)
-        if check_author and post.author.id != g.user.id:
+        if check_author and post.user.id != g.user.id:
             abort(403, FORBIDDEN)
         return post
         
     
-    def save(self) -> None:
+    def save(self) -> Self:
 
         db = get_db()
         db.execute(
-            'INSERT INTO post (author_id, title, body) VALUES (?,?,?)',
-            (self.author.id, self.title, self.body)
+            'INSERT INTO post (user_id, title, body) VALUES (?,?,?)',
+            (self.user.id, self.title, self.body)
         )
         db.commit()
+        return Post.get(user_id = self.user.id, title = self.title, body = self.body)
 
     def __repr__(self) -> str:
-        return f'Post(title = {self.title[:10]}, body={self.body[:10]}, author={self.author.username})'
+        return f'Post(title = {self.title[:10]}, body={self.body[:10]}, user={self.user.username})'
 
 
 class Like(Model):
@@ -266,7 +255,7 @@ class Like(Model):
     def __init__(
         self,
         post: Post,
-        author: User,
+        user: User,
     ) -> None: ...
         
     @overload
@@ -274,7 +263,7 @@ class Like(Model):
         self,
         id: int,
         post_id: int,
-        author_id: int,
+        user_id: int,
         created: str
     ) -> None: ...
 
@@ -282,22 +271,22 @@ class Like(Model):
 
         if len(args) == 2:
             self._post = args[0]
-            self._author = args[1]
+            self._user = args[1]
         
         elif len(args) == 4:
             self.id = args[0]
             self._post = args[1]
-            self._author = args[2]
+            self._user = args[2]
             self.created = args[3]
 
         elif len(kwargs) == 2:
             self._post = kwargs['post']
-            self._author = kwargs['author']
+            self._user = kwargs['user']
         
         elif len(kwargs) == 3:
             self.id = kwargs['id']
             self._post = kwargs['post']
-            self._author = kwargs['author']
+            self._user = kwargs['user']
             self.created = kwargs['created']
 
         else:
@@ -311,22 +300,23 @@ class Like(Model):
         return self._post
     
     @property
-    def author(self) -> User:
-        if not isinstance(self._author, User):
-            self._author = User.get(id = self._author)
-        return self._author
+    def user(self) -> User:
+        if not isinstance(self._user, User):
+            self._user = User.get(id = self._user)
+        return self._user
 
-    def save(self) -> None:
+    def save(self) -> Self:
 
         db = get_db()
         db.execute(
-            'INSERT INTO like (post_id, author_id) VALUES (?,?)',
-            (self.post.id, self.author.id)
+            'INSERT INTO like (post_id, user_id) VALUES (?,?)',
+            (self.post.id, self.user.id)
         )
         db.commit()
+        return Like.get(post_id = self.post.id, user_id = self.user.id)
 
     def __repr__(self) -> str:
-        return f'Like(post={self.post}, author={self.author})'
+        return f'Like(post={self.post}, user={self.user})'
     
 
 class Reply(Model):
@@ -353,32 +343,45 @@ class Reply(Model):
 
         if len(args) == 5:
             self.id = args[0]
-            self.post = args[1]
-            self.user = args[2]
+            self._post = args[1]
+            self._user = args[2]
             self.body = args[3]
             self.created = args[4]
         
         elif len(args) == 3:
-            self.post = args[0]
-            self.user = args[1]
+            self._post = args[0]
+            self._user = args[1]
             self.body = args[2]
 
         elif len(kwargs) == 5:
             self.id = kwargs['id']
-            self.post = kwargs['post']
-            self.user = kwargs['user']
+            self._post = kwargs['post']
+            self._user = kwargs['user']
             self.body = kwargs['body']
             self.created = kwargs['created']
         
         elif len(kwargs) == 3:
-            self.post = kwargs['post']
-            self.user = kwargs['user']
+            self._post = kwargs['post']
+            self._user = kwargs['user']
             self.body = kwargs['body']
 
         else:
             raise ValueError(f'Esperava 5 ou 3 argumentos *args ou **kwargs')
         
-    def save(self) -> None:
+    @property
+    def post(self) -> Post:
+        if not isinstance(self._post, Post):
+            self._post = Post.get(id = self._post)
+        return self._post
+    
+    @property
+    def user(self) -> User:
+        if not isinstance(self._user, User):
+            self._user = User.get(id = self._user)
+        return self._user
+
+        
+    def save(self) -> Self:
 
         db = get_db()
         db.execute(
@@ -386,9 +389,10 @@ class Reply(Model):
             (self.post.id, self.user.id, self.body)
         )
         db.commit()
+        return Reply.get(post_id = self.post.id, user_id = self.user.id, body = self.body)
 
     def __repr__(self) -> str:
-        return f'Reply(post={self.post}, author={self.author}, body={self.body})'
+        return f'Reply(post={self.post}, user={self.user}, body={self.body})'
 
 
 ModelType = Union[User, Post, Like, Reply]

@@ -38,8 +38,8 @@ def test_register(client: FlaskClient, app: Flask) -> None:
     ('username', 'password', 'message'),
     (
         ('', '', USERNAME_INVALIDO.encode()),
-        ('test', '', SENHA_INVALIDA.encode()),
-        ('test', '123', USERNAME_JA_REGISTRADO.encode())
+        ('a', '', SENHA_INVALIDA.encode()),
+        ('a', '123', USERNAME_JA_REGISTRADO.encode())
     )
 )
 def test_register_validate_input(client: FlaskClient, username: str, password: str, message: bytes) -> None:
@@ -75,7 +75,7 @@ def test_login(client: FlaskClient, auth: AuthActions) -> None:
     with client:
         client.get('/')
         assert session['user_id'] == 1
-        assert g.user.username == 'test'
+        assert g.user.username == 'a'
 
 
 @pytest.mark.parametrize(

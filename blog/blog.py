@@ -18,13 +18,13 @@ def get_post(id: int, check_author: bool = True) -> Post:
     if post is None:
         abort(404, POST_NAO_EXISTE)
 
-    if check_author and post.author.id != g.user.id:
+    if check_author and post.user.id != g.user.id:
         abort(403)
     return post
 
 
-def deu_like(post_id: int, author_id: int) -> bool:
-    like = Like.get(post_id = post_id, author_id = author_id)
+def deu_like(post_id: int, user_id: int) -> bool:
+    like = Like.get(post_id = post_id, user_id = user_id)
     return like is not None
         
 
@@ -50,7 +50,6 @@ def create():
             flash(None)
 
             Post.create_and_save(
-                author_id = g.user.id,
                 title = title,
                 body = body
             )
@@ -112,7 +111,7 @@ def like(post_id: int):
     db = get_db()
     if deu_like(post_id, g.user.id):
         db.execute(
-            'DELETE FROM like WHERE post_id = ? AND author_id = ?',
+            'DELETE FROM like WHERE post_id = ? AND user_id = ?',
             (post_id, g.user.id)
         )
         db.execute(
@@ -122,7 +121,7 @@ def like(post_id: int):
         liked = False
     else:
         db.execute(
-            'INSERT INTO like (post_id, author_id) VALUES (?,?)',
+            'INSERT INTO like (post_id, user_id) VALUES (?,?)',
             (post_id, g.user.id)
         )
         db.execute(
@@ -160,9 +159,8 @@ def reply(post_id: int = None):
         return redirect(url_for('blog.reply', post_id=post_id))
         
     Reply.create_and_save(
-        post_id = post_id,
-        user_id = g.user.id,
+        post = post_id,
+        user = g.user.id,
         body = body
     )
     return redirect(url_for('blog.index'))
-

@@ -11,22 +11,22 @@ CREATE TABLE user (
 
 CREATE TABLE post (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    author_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     title TEXT NOT NULL,
     body TEXT NOT NULL,
     like_count INTEGER NOT NULL DEFAULT 0,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (author_id) REFERENCES user (id)
+    FOREIGN KEY (user_id) REFERENCES user (id)
 );
 
 CREATE TABLE like (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     post_id INTEGER NOT NULL,
-    author_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (post_id) REFERENCES post (id),
-    FOREIGN KEY (author_id) REFERENCES user (id),
-    UNIQUE (post_id, author_id)
+    FOREIGN KEY (user_id) REFERENCES user (id),
+    UNIQUE (post_id, user_id)
 );
 CREATE INDEX idx_like_post_id ON like (post_id);
 

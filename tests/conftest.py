@@ -50,7 +50,7 @@ class AuthActions(object):
     def __init__(self, client: FlaskClient) -> None:
         self._client = client
 
-    def login(self, username: str = 'test', password: str = 'test') -> TestResponse:
+    def login(self, username: str = 'a', password: str = 'a') -> TestResponse:
         return self._client.post(
             '/auth/login',
             data = {

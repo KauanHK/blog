@@ -3,6 +3,7 @@ from blog.db import get_db
 from flask import Flask
 from flask.testing import FlaskClient
 from conftest import AuthActions
+from blog.models import Post
 
 
 
@@ -27,7 +28,7 @@ def test_index(client: FlaskClient, auth: AuthActions):
     response = client.get('/')
     assert b'Log Out' in response.data
     assert b'test title' in response.data
-    assert b'test | ' in response.data
+    assert b'@a | ' in response.data
     assert b'test\nbody' in response.data
     assert b'href="/update/1"' in response.data
 
@@ -61,7 +62,7 @@ def test_author_required(app: Flask, client: FlaskClient, auth: AuthActions) -> 
 
     with app.app_context():
         db = get_db()
-        db.execute('UPDATE post SET author_id = 2 WHERE id = 1')
+        db.execute('UPDATE post SET user_id = 2 WHERE id = 1')
         db.commit()
 
     auth.login()
@@ -197,6 +198,7 @@ def test_reply(app: Flask, client: FlaskClient, auth: AuthActions):
         db = get_db()
         reply = db.execute(
             'SELECT body FROM reply WHERE id = ?',
-            (1,)
+            (3,)
         ).fetchone()
         assert reply['body'] == 'Body teste ...'
+

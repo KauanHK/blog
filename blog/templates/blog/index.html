@@ -18,7 +18,7 @@
     {% for post in posts %}
     
         <article>
-            <p>@{{ post.author.username }} | {{ post.created.strftime('%d/%m/%Y') }}</p>
+            <p>@{{ post.user.username }} | {{ post.created.strftime('%d/%m/%Y') }}</p>
             <h1>{{ post.title }}</h1>
             <p class="body">{{ post.body }}</p>
         
@@ -35,7 +35,7 @@
                     </a>
                 </div>
                 
-                {% if g.user.id == post.author.id %}
+                {% if g.user.id == post.user.id %}
                     <a href="{{ url_for('blog.update', id=post.id) }}" class="edit-button">Editar</a>
                 {% endif %}
             </div>
