@@ -30,11 +30,7 @@ def register():
             flash(SENHA_INVALIDA)
         else:
             try:
-                db.execute(
-                    'INSERT INTO user (username, password) VALUES (?,?)',
-                    (username, generate_password_hash(password))
-                )
-                db.commit()
+                User.create_and_save(username, password)
             except db.IntegrityError:
                 flash(USERNAME_JA_REGISTRADO)
             else:
