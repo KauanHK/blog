@@ -12,17 +12,6 @@ from .messages import POST_NAO_EXISTE, SEM_TITULO, SEM_BODY
 bp = Blueprint('blog', __name__)
 
 
-def get_post(id: int, check_author: bool = True) -> Post:
-
-    post = Post.get(id = id)
-    if post is None:
-        abort(404, POST_NAO_EXISTE)
-
-    if check_author and post.user.id != g.user.id:
-        abort(403)
-    return post
-
-
 def deu_like(post_id: int, user_id: int) -> bool:
     like = Like.get(post_id = post_id, user_id = user_id)
     return like is not None
@@ -30,7 +19,7 @@ def deu_like(post_id: int, user_id: int) -> bool:
 
 @bp.route('/')
 def index():
-    posts = Post.get_all()
+    posts = Post.get_all()[::-1]
     return render_template('blog/index.html', posts=posts, deu_like=deu_like)
 
 
@@ -62,7 +51,7 @@ def create():
 @login_required
 def update(id: int):
 
-    post = get_post(id)
+    post = Post.get(id = id)
 
     if request.method == 'POST':
 
@@ -90,7 +79,7 @@ def delete(id: int):
 
     # Verifica se o post existe e se o autor é o usuário logado
     # Se não, é lançada uma exceção
-    get_post(id)
+    Post.get(id = id)
 
     db = get_db()
     db.execute(
@@ -106,7 +95,7 @@ def delete(id: int):
 def like(post_id: int):
 
     # Se o post não existir, será lançada uma exceção
-    get_post(post_id, check_author=False)
+    Post.get(check_author = False, id = post_id)
 
     db = get_db()
     if deu_like(post_id, g.user.id):
@@ -146,9 +135,9 @@ def like(post_id: int):
 
 @bp.route('/reply/<int:post_id>', methods=('GET', 'POST'))
 @login_required
-def reply(post_id: int = None):
+def reply(post_id: int):
 
-    get_post(post_id, check_author=False)
+    Post.get(check_author = False, id = post_id)
     if request.method == 'GET':
         return render_template('blog/reply.html')
 
