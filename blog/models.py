@@ -32,10 +32,27 @@ class Model(ABC):
     
     @classmethod
     def get(cls, **kwargs) -> Self | None:
+        """
+        Retorna um objeto com a condições dadas.
+
+        ```
+        objs = Model.get(id = 2)
+        ```
+        
+        """
+
         return cls._get(**kwargs)
     
     @classmethod
     def filter(cls, **kwargs) -> list[Self]:
+        """
+        Retorna uma lista de objetos que satisfazem as condições
+
+        ```
+        user = User.get(id = 2)
+        posts = Post.filter(user = user)
+        ```
+        """
 
         return get_db().execute(
             f'SELECT * FROM {cls.table} WHERE ' + _get_conditions_sql(kwargs),
@@ -44,6 +61,7 @@ class Model(ABC):
     
     @classmethod
     def get_all(cls) -> list[Self]:
+        """Retorna uma lista de objetos correspondente a todas linhas da tabela."""
         
         all = get_db().execute(
             f'SELECT * FROM {cls.__name__.lower()}'
@@ -60,9 +78,11 @@ class Model(ABC):
 
     @classmethod
     def create_and_save(cls, **kwargs) -> Self:
+        """Cria e salva no banco de dados"""
         return cls._create_and_save(**kwargs)
     
     def is_saved(self) -> bool:
+        """Retorna True se está salvo no banco de dados, senão False."""
         
         if self.id is None:
             return False
@@ -77,7 +97,9 @@ class Model(ABC):
 
 
     @abstractmethod
-    def save(self) -> Self: ...
+    def save(self) -> Self:
+        """Salva no banco de dados."""
+        ...
 
     
 
@@ -216,6 +238,9 @@ class Post(Model):
         return replies
     
     def add_reply(self, body: str) -> "Reply":
+        """
+        Adiciona um Reply ao banco de dados. O usuário autor do reply será o usuário logado.
+        """
         
         return Reply.create_and_save(
             post_id = self.id,
@@ -225,7 +250,14 @@ class Post(Model):
 
     
     @classmethod
-    def get(cls, check_author: bool = True, **kwargs) -> Self | None:
+    def get(cls, check_author: bool = True, **kwargs) -> Self:
+        """
+        Retorna um Post com as condições fornecidas em kwargs. 
+        Se o post não existir, ou check_author for True e o usuário logado não for o autor do post, 
+        lança uma exceção 404 ou 403.
+
+        :param check_author: Se True, verifica se o usuário logado é o autor do post encontrado. Caso não seja, lança uma exceção
+        """
 
         post = cls._get(**kwargs)
         if post is None:
