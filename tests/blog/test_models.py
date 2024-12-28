@@ -42,7 +42,7 @@ def test_is_saved(app: Flask, obj: ModelType):
     with app.app_context():
 
         assert not obj.is_saved()
-        obj = obj.save()
+        obj.save()
         assert obj.is_saved()
 
 
@@ -92,4 +92,12 @@ def test_filter(app: Flask, model_type: ModelType, kwargs: dict[str, Any], lengt
 
     with app.app_context():
         assert len(model_type.filter(**kwargs)) == length
+
+
+def test_user_save(app: Flask):
+
+    user = User('bob', '123')
+    with app.app_context():
+        user.save()
+        assert user.id is not None
 
