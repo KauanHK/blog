@@ -22,10 +22,17 @@ class Model(ABC):
     @classmethod
     def _get(cls, **kwargs) -> Self | None:
 
+        columns = {}
+        for k,v in kwargs.items():
+            if isinstance(v, ModelType):
+                columns[f'{k}_id'] = v.id
+            else:
+                columns[k] = v
+
         db = get_db()
-        command = f'SELECT * FROM {cls.table} WHERE ' + _get_conditions_sql(kwargs)
+        command = f'SELECT * FROM {cls.table} WHERE ' + _get_conditions_sql(columns)
         obj = db.execute(
-            command, tuple(kwargs.values())
+            command, tuple(columns.values())
         ).fetchone()
 
         return cls(*obj) if obj else None
