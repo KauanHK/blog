@@ -97,7 +97,7 @@ class Model(ABC):
 
 
     @abstractmethod
-    def save(self) -> Self:
+    def save(self) -> None:
         """Salva no banco de dados."""
         ...
 
@@ -135,7 +135,7 @@ class User(Model):
         else:
             raise ValueError(f'init de User espera dois ou três argumentos, mas recebeu {len(args)}\nargs')
         
-    def save(self) -> Self:
+    def save(self) -> None:
         
         db = get_db()
         db.execute(
@@ -143,7 +143,9 @@ class User(Model):
             (self.username, self.password_hash)
         )
         db.commit()
-        return User.get(username = self.username)
+        self.id = db.execute(
+            'SELECT MAX(id) FROM user'
+        ).fetchone()[0]
 
     @classmethod
     def create_and_save(cls, username: str, password: str) -> Self:
@@ -184,6 +186,8 @@ class Post(Model):
             self._user = g.user
             self.title = args[0]
             self.body = args[1]
+            self.like_count = None
+            self.created = None
 
         elif len(args) == 6:
             self.id = args[0]
@@ -199,6 +203,8 @@ class Post(Model):
             self._user = g.user
             self.title = kwargs['title']
             self.body = kwargs['body']
+            self.like_count = None
+            self.created = None
 
         elif len(kwargs) == 6:
             self.id = kwargs['id']
@@ -267,7 +273,7 @@ class Post(Model):
         return post
         
     
-    def save(self) -> Self:
+    def save(self) -> None:
 
         db = get_db()
         db.execute(
@@ -275,7 +281,12 @@ class Post(Model):
             (self.user.id, self.title, self.body)
         )
         db.commit()
-        return Post.get(user_id = self.user.id, title = self.title, body = self.body)
+        post = db.execute(
+            'SELECT MAX(id) FROM post'
+        ).fetchone()
+        self.id = post[0]
+        self.like_count = 0
+        self.created = post[-1]
 
     def __repr__(self) -> str:
         return f'Post(title = {self.title[:10]}, body={self.body[:10]}, user={self.user.username})'
@@ -337,7 +348,7 @@ class Like(Model):
             self._user = User.get(id = self._user)
         return self._user
 
-    def save(self) -> Self:
+    def save(self) -> None:
 
         db = get_db()
         db.execute(
@@ -345,7 +356,11 @@ class Like(Model):
             (self.post.id, self.user.id)
         )
         db.commit()
-        return Like.get(post_id = self.post.id, user_id = self.user.id)
+        like = db.execute(
+            'SELECT MAX(id) FROM like'
+        ).fetchone()
+        self.id = like[0]
+        self.created = like['created']
 
     def __repr__(self) -> str:
         return f'Like(post={self.post}, user={self.user})'
@@ -413,7 +428,7 @@ class Reply(Model):
         return self._user
 
         
-    def save(self) -> Self:
+    def save(self) -> None:
 
         db = get_db()
         db.execute(
@@ -421,7 +436,11 @@ class Reply(Model):
             (self.post.id, self.user.id, self.body)
         )
         db.commit()
-        return Reply.get(post_id = self.post.id, user_id = self.user.id, body = self.body)
+        reply = db.execute(
+            'SELECT MAX(id) FROM reply'
+        ).fetchone()
+        self.id = reply[0]
+        self.created = reply[-1]
 
     def __repr__(self) -> str:
         return f'Reply(post={self.post}, user={self.user}, body={self.body})'
