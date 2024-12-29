@@ -27,7 +27,7 @@ main {
 
 
 /* Rodapé */
-footer {
+footer.blog {
     text-align: center;
     background: #333;
     color: #fff;
