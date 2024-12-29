@@ -17,36 +17,61 @@
 
     {% for post in posts %}
     
-        <article>
-            <p>@{{ post.user.username }} | {{ post.created.strftime('%d/%m/%Y') }}</p>
-            <h1>{{ post.title }}</h1>
-            <p class="body">{{ post.body }}</p>
-        
-            <div class="actions">
-
-                <div class="like-container">
-                    <a class="like-button {% if g.user and deu_like(post.id, g.user.id) %}curtido{% endif %}" 
-                    {% if not g.user %}
-                        href="{{ url_for('auth.login') }}"
-                    {% else %}
-                        data-post-id="{{ post.id }}"
-                    {% endif %}>
-                        {{ post.like_count }} Curtir
-                    </a>
-                </div>
-                
-                {% if g.user.id == post.user.id %}
-                    <a href="{{ url_for('blog.update', id=post.id) }}" class="edit-button">Editar</a>
-                {% endif %}
+        <article class="post">
+            <header class="post-header">
+                <p class="post-meta">
+                    <span class="post-user">@{{ post.user.username }}</span> | 
+                    <span class="post-date">{{ post.created.strftime('%d/%m/%Y') }}</span>
+                </p>
+                <h1 class="post-title">{{ post.title }}</h1>
+            </header>
+            
+            <div class="post-body">
+                <p>{{ post.body }}</p>
             </div>
+            
+            <footer class="post-footer">
+                <div class="actions">
+                    <div class="like-container">
+                        <a 
+                            class="like-button {% if g.user and deu_like(post.id, g.user.id) %}curtido{% endif %}" 
+                            {% if not g.user %}
+                                href="{{ url_for('auth.login') }}"
+                            {% else %}
+                                data-post-id="{{ post.id }}"
+                            {% endif %}
+                        >
+                            {{ post.like_count }} Curtir
+                        </a>
+                        <a href="{{ url_for('blog.reply', post_id=post.id) }}" class="reply-button">Responder</a>
+                    </div>
+
+                    {% if g.user and g.user.id == post.user.id %}
+                        <a href="{{ url_for('blog.update', id=post.id) }}" class="edit-button">Editar</a>
+                    {% endif %}
+                </div>
+
+                {% if post.replies %}
+                    <div class="replies">
+                        {% for reply in post.replies %}
+                            <div class="reply">
+                                <hr>
+                                <h5 class="reply-user">{{ reply.user.username }}</h5>
+                                <p class="reply-body">{{ reply.body }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </footer>
         </article>
-    
+        
         {% if not loop.last %}
-            <hr>
+            <hr class="post-divider">
         {% endif %}
         
     {% endfor %}
 
 </section>
+
 
 {% endblock %}
