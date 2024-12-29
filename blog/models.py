@@ -409,8 +409,8 @@ class Reply(Model):
 
         elif len(kwargs) == 5:
             self.id = kwargs['id']
-            self._post = kwargs['post']
-            self._user = kwargs['user']
+            self._post = kwargs['post_id']
+            self._user = kwargs['user_id']
             self.body = kwargs['body']
             self.created = kwargs['created']
         
@@ -425,7 +425,7 @@ class Reply(Model):
     @property
     def post(self) -> Post:
         if not isinstance(self._post, Post):
-            self._post = Post.get(id = self._post)
+            self._post = Post.get(False, id = self._post)
         return self._post
     
     @property
