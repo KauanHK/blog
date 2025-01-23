@@ -22,7 +22,8 @@ def test_register(client: FlaskClient, app: Flask) -> None:
     response = client.post(
         '/auth/register', data = {
             'username': 'w',
-            'password': 'w'
+            'password': 'w',
+            'confirm_password': 'w'
         }
     )
     assert response.headers['Location'] == '/auth/login'
@@ -52,7 +53,8 @@ def test_register_validate_input(client: FlaskClient, username: str, password: s
         '/auth/register',
         data = {
             'username': username,
-            'password': password
+            'password': password,
+            'confirm_password': password
         }
     )
     assert message in response.data
