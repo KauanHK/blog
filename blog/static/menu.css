@@ -18,6 +18,8 @@ nav ul {
     display: flex;
     justify-content: center;
     list-style: none;
+    display: flex;
+    gap: 28px;
 }
 
 nav ul li a {
