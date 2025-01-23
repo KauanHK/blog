@@ -7,7 +7,7 @@ from typing import Callable
 from .db import get_db
 
 from .messages import (
-    USERNAME_INVALIDO, SENHA_INVALIDA, USERNAME_JA_REGISTRADO, USERNAME_INCORRETO, SENHA_INCORRETA
+    USERNAME_INVALIDO, SENHA_INVALIDA, USERNAME_JA_REGISTRADO, USERNAME_INCORRETO, SENHA_INCORRETA, SENHAS_NAO_COINCIDEM
 )
 from .models import User
 
@@ -22,12 +22,15 @@ def register():
 
         username = request.form['username']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
         db = get_db()
 
         if not username:
             flash(USERNAME_INVALIDO)
         elif not password:
             flash(SENHA_INVALIDA)
+        elif password != confirm_password:
+            flash(SENHAS_NAO_COINCIDEM)
         else:
             try:
                 User.create_and_save(username, password)
