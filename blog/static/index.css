@@ -5,6 +5,29 @@ section.posts {
     gap: 12px;
 }
 
+/* Estilos do botão "Novo Post" */
+a.novo-post {
+    display: inline-block;
+    margin: 0 auto; /* Centraliza o botão verticalmente */
+    text-align: center;
+    text-decoration: none;
+    background-color: #333;
+    color: #fff;
+    padding: 8px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+/* Efeito ao passar o mouse */
+a.novo-post:hover {
+    background-color: #555;
+    transform: translateY(-3px);
+}
+
 /* Estilização de cada postagem */
 .post {
     width: 100%;
