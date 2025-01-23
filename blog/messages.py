@@ -3,6 +3,7 @@ SENHA_INVALIDA = 'Defina uma senha.'
 USERNAME_JA_REGISTRADO = 'Username já registrado.'
 USERNAME_INCORRETO = 'Username incorreto.'
 SENHA_INCORRETA = 'Senha incorreta.'
+SENHAS_NAO_COINCIDEM = 'Senhas não coincidem.'
 
 POST_NAO_EXISTE = 'Post não existe.'
 FORBIDDEN = 'Você não tem acesso a esta página.'
